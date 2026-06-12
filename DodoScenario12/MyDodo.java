@@ -1,0 +1,603 @@
+import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
+
+/**
+ *
+ * @author Sjaak Smetsers & Renske Smetsers-Weeda
+ * @version 3.0 -- 20-01-2017
+ */
+public class MyDodo extends Dodo
+{
+    private int myNrOfEggsHatched;
+    
+    
+    public MyDodo() {
+        super( EAST );
+        myNrOfEggsHatched = 0;
+    }
+
+    public void act() {
+    }
+
+    /**
+     * Move one cell forward in the current direction.
+     * 
+     * <P> Initial: Dodo is somewhere in the world
+     * <P> Final: If possible, Dodo has moved forward one cell
+     *
+     */
+    public void move() {
+        if ( canMove() ) {
+            step();
+        } else {
+            showError( "I'm stuck!" );
+        }
+    }
+    
+    public void climbOverFence() {
+        if (fenceAhead()) {
+            turnLeft();
+            move();
+            turnRight();
+            move();
+            move();
+            turnRight();
+            move();
+            turnLeft();
+        }
+    }
+
+    /**
+     * Test if Dodo can move forward, (there are no obstructions
+     *    or end of world in the cell in front of her).
+     * 
+     * <p> Initial: Dodo is somewhere in the world
+     * <p> Final:   Same as initial situation
+     * 
+     * @return boolean true if Dodo can move (no obstructions ahead)
+     *                 false if Dodo can't move
+     *                      (an obstruction or end of world ahead)
+     */
+    public boolean canMove() {
+        if ( borderAhead() ){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Hatches the egg in the current cell by removing
+     * the egg from the cell.
+     * Gives an error message if there is no egg
+     * 
+     * <p> Initial: Dodo is somewhere in the world. There is an egg in Dodo's cell.
+     * <p> Final: Dodo is in the same cell. The egg has been removed (hatched).     
+     */    
+    public void hatchEgg () {
+        if ( onEgg() ) {
+            pickUpEgg();
+            myNrOfEggsHatched++;
+        } else {
+            showError( "There was no egg in this cell" );
+        }
+    }
+    
+    /**
+     * Returns the number of eggs Dodo has hatched so far.
+     * 
+     * @return int number of eggs hatched by Dodo
+     */
+    public int getNrOfEggsHatched() {
+        return myNrOfEggsHatched;
+    }
+    
+    /**
+     * Move given number of cells forward in the current direction.
+     * 
+     * <p> Initial:   
+     * <p> Final:  
+     * 
+     * @param   int distance: the number of steps made
+     */
+    public void jump( int distance ) {
+        int nrStepsTaken = 0;               
+        while ( nrStepsTaken < distance ) {
+            move();                         
+            nrStepsTaken++;                
+        }
+    }
+
+    
+    
+    
+    /**
+     * Walks to edge of the world printing the coordinates at each step
+     * 
+     * <p> Initial: Dodo is on West side of world facing East.
+     * <p> Final:   Dodo is on East side of world facing East.
+     *              Coordinates of each cell printed in the console.
+     */
+
+    public void walkToWorldEdgePrintingCoordinates( ){
+        while( ! borderAhead() ){
+            System.out.println("X cord: "+ getX() + " Y cord: " + getY());
+            move();
+        }
+    }
+    
+    public void faceEast() {
+        while (getDirection() != EAST) {
+            turnRight();
+            if (getDirection() == EAST) {
+                break;
+            }
+        }
+    }
+    
+    public void goToLocation(int x, int y) {
+        if (!validCoordinates(x, y)) {
+            return;
+        }
+        
+        while (getX() < x) {
+            setDirection(EAST);
+            move();
+        }
+        
+        while (getX() > x) {
+            setDirection(WEST);
+            move();
+        }
+        
+        while (getY() < y) {
+            setDirection(SOUTH);
+            move();
+        }
+        
+        while (getY() > y) {
+            setDirection(NORTH);
+            move();
+        }
+    }
+    
+    public int[] calculateDistance(int correctX, int correctY, int currentX, int currentY) {
+        int distanceX = correctX - currentX;
+        int distanceY = correctY - currentY;
+        
+        int[] distances = {distanceX, distanceY};  
+    
+        return distances;
+    }
+    
+    public boolean destinationReached(int correctX, int correctY, int currentX, int currentY) {
+        
+        if (currentY == correctY && currentX == correctX) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+     
+    public void check360ForNest(int oldDirection) {
+        if (!onNest()) {
+            if (nestAhead()) {
+                move();
+            } 
+            turnRight();
+            if (!nestAhead()) {
+                turnLeft();
+                turnLeft();
+                if (nestAhead()) {
+                    move();
+                }
+            }
+        }
+        
+        setDirection(oldDirection);
+        
+    }
+    
+    public void eggTrailToNest() {
+        int oldDirection;
+        
+        
+        while (!onNest()) {
+            if(eggAhead()) {
+                move();
+                
+            } else {
+                turnLeft();
+                if (eggAhead()) {
+                    move();
+                    
+                } else {
+                    turnRight();
+                    turnRight();
+                    if (eggAhead()) {
+                        move();
+                    }
+                }
+            }
+            
+            oldDirection = getDirection();
+            
+            check360ForNest(oldDirection);
+            
+            
+            
+        }
+    }
+    
+   public void findNestInMaze() {
+    while (!onNest()) {
+
+        turnRight();
+
+        if (!fenceAhead()) {
+            move();
+        } else {
+            turnLeft();
+
+            if (!fenceAhead()) {
+                move();
+            } else {
+                turnLeft();
+            }
+        }
+    }
+}
+
+    
+    public void walkToWorldEdgeClimbingOverFences() {
+        while( ! borderAhead() ){
+
+            if (fenceAhead()) {
+            turnLeft();
+            move();
+            turnRight();
+            move();
+            move();
+            turnRight();
+            move();
+            turnLeft();
+            
+    
+        } else {
+             System.out.println("X cord: "+ getX() + " Y cord: " + getY());
+            move();
+        }
+        }
+    }
+    
+    public void walkToWorldEdgeClimbingOverFencesNest() {
+        while( ! borderAhead() ){
+
+            if (fenceAhead()) {
+            turnLeft();
+            move();
+            turnRight();
+            move();
+            move();
+            turnRight();
+            move();
+            turnLeft();
+            
+    
+        } else if (onNest()) {
+            layEgg();
+            break;
+        } else {
+         move();
+        }
+        }
+    }
+    
+    public void walkAroundFencedArea() {
+    while (!onEgg()) {
+
+        turnRight();
+
+        if (!fenceAhead()) {
+            move();
+        } else {
+            turnLeft();
+
+            if (!fenceAhead()) {
+                move();
+            } else {
+                turnLeft();
+            }
+        }
+    }
+}
+    
+
+    /**
+     * Test if Dodo can lay an egg.
+     *          (there is not already an egg in the cell)
+     * 
+     * <p> Initial: Dodo is somewhere in the world
+     * <p> Final:   Same as initial situation
+     * 
+     * @return boolean true if Dodo can lay an egg (no egg there)
+     *                 false if Dodo can't lay an egg
+     *                      (already an egg in the cell)
+     */
+
+    public boolean canLayEgg( ){
+            if( onEgg() ){
+             return false;
+       }else{
+            return true;
+      }
+    }  
+    
+    public void stepOneCellBackwards() {
+        turn180();
+            move();
+            turn180();
+    }
+    
+    public boolean grainAhead() {
+        move();
+        if (onGrain()) {
+            stepOneCellBackwards();
+            return true;
+        } else {
+            stepOneCellBackwards();
+             return false;
+        }
+    }
+    
+    public void pickUpGrainsAndPrintCoordinates() {
+        while (!borderAhead()) {
+            if (onGrain()) {
+                pickUpGrain();
+                System.out.println("Picked up grain on X: " + getX() + " Y: " + getY() );
+            } else {
+                move();
+            }
+        }
+    }
+    
+    public void gotoEgg() {
+       while (!onEgg()) {
+           move();
+           
+           if (borderAhead()) { 
+            break;
+            }
+               
+       }
+    }
+    
+    public void worldEmptyNestsTopRow() {
+        while (!borderAhead()) {
+        if (onNest()) {
+            if (!onEgg()) {
+                layEgg();
+            }
+        }
+        move();
+    }
+    }
+    
+    public boolean validCoordinates(int x, int y) {
+        int maxX = getWorld().getWidth();
+        int maxY = getWorld().getHeight();
+        
+        if (x >= maxX || x < 0) {
+            showError("Invalid coordinates");
+            return false;
+        }
+        
+        if (y >= maxY || y < 0) {
+        showError("Invalid coordinates");
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public int countEggsInRow() {
+    int y = getY();
+        
+    int eggCount = 0;
+    
+    goBackToStartOfRowAndFaceBack(0, y);
+    
+    if (onEgg()) {
+        eggCount++;
+    }
+    
+    while (!borderAhead()) {
+        move();
+        if (onEgg()) {
+            eggCount++;
+        }
+    }
+    
+    goBackToStartOfRowAndFaceBack(0, y);
+    
+    return eggCount;
+}
+
+    public int countEggsInWorld() {
+        int startX = getX();
+        int startY = getY();
+        int startDirection = getDirection();
+        int totalEggCount = 0;
+        
+        for (int row = 0; row < getWorld().getHeight(); row++) {
+            goToLocation(0, row);
+            
+            int eggsInRow = countEggsInRow();
+            totalEggCount += eggsInRow;
+            
+            System.out.println("Rij " + row + ": " + eggsInRow + " eieren");
+            System.out.println("Totaal tot nu toe: " + totalEggCount);
+        }
+        
+        goToLocation(startX, startY);
+        setDirection(startDirection);
+        
+        System.out.println("Aantal eieren in de wereld: " + totalEggCount);
+        
+        return totalEggCount;
+    }
+
+    public int rowWithMostEggs() {
+        int startX = getX();
+        int startY = getY();
+        int startDirection = getDirection();
+        int rowWithMostEggs = 0;
+        int mostEggs = -1;
+        
+        for (int row = 0; row < getWorld().getHeight(); row++) {
+            goToLocation(0, row);
+            
+            int eggsInRow = countEggsInRow();
+            System.out.println("Rij " + row + ": " + eggsInRow + " eieren");
+            
+            if (eggsInRow > mostEggs) {
+                mostEggs = eggsInRow;
+                rowWithMostEggs = row;
+            }
+        }
+        
+        goToLocation(startX, startY);
+        setDirection(startDirection);
+        
+        System.out.println("Rij met de meeste eieren: " + rowWithMostEggs);
+        
+        return rowWithMostEggs;
+    }
+
+    public double averageEggsPerRow() {
+        int startX = getX();
+        int startY = getY();
+        int startDirection = getDirection();
+        int totalEggCount = 0;
+        int numberOfRows = getWorld().getHeight();
+        
+        for (int row = 0; row < numberOfRows; row++) {
+            goToLocation(0, row);
+            totalEggCount += countEggsInRow();
+        }
+        
+        double average = (double) totalEggCount / numberOfRows;
+        
+        goToLocation(startX, startY);
+        setDirection(startDirection);
+        
+        System.out.println("Gemiddeld aantal eieren per rij: " + average);
+        
+        return average;
+    }
+
+    public int getIncorrectRowNr() {
+        int startX = getX();
+        int startY = getY();
+        int startDirection = getDirection();
+        int rowNumber = 0;
+        int incorrectRowNumber = -1;
+        
+        while (rowNumber < getWorld().getHeight()) {
+            goToLocation(0, rowNumber);
+            
+            if (countEggsInRow() % 2 == 1) {
+                incorrectRowNumber = rowNumber;
+            }
+            
+            rowNumber++;
+        }
+        
+        goToLocation(startX, startY);
+        setDirection(startDirection);
+        
+        System.out.println("Foute rij: " + incorrectRowNumber);
+        
+        return incorrectRowNumber;
+    }
+    
+    public int getIncorrectColumnNr() {
+        int startX = getX();
+        int startY = getY();
+        int startDirection = getDirection();
+        int columnNumber = 0;
+        int incorrectColumnNumber = -1;
+        
+        while (columnNumber < getWorld().getWidth()) {
+            if (countEggsInColumn(columnNumber) % 2 == 1) {
+                incorrectColumnNumber = columnNumber;
+            }
+            
+            columnNumber++;
+        }
+        
+        goToLocation(startX, startY);
+        setDirection(startDirection);
+        
+        System.out.println("Foute kolom: " + incorrectColumnNumber);
+        
+        return incorrectColumnNumber;
+    }
+    
+    public int countEggsInColumn(int columnNumber) {
+        int rowNumber = 0;
+        int eggCount = 0;
+        
+        while (rowNumber < getWorld().getHeight()) {
+            goToLocation(columnNumber, rowNumber);
+            
+            if (onEgg()) {
+                eggCount++;
+            }
+            
+            rowNumber++;
+        }
+        
+        return eggCount;
+    }
+    
+    public void fixIncorrectBit() {
+        if (onEgg()) {
+            pickUpEgg();
+        } else {
+            layEgg();
+        }
+    }
+    
+    public void fixParityBit() {
+        int startX = getX();
+        int startY = getY();
+        int startDirection = getDirection();
+        int rowNumber = getIncorrectRowNr();
+        int columnNumber = getIncorrectColumnNr();
+        
+        if (rowNumber == -1 || columnNumber == -1) {
+            System.out.println("Geen fout gevonden");
+            goToLocation(startX, startY);
+            setDirection(startDirection);
+            return;
+        }
+        
+        goToLocation(columnNumber, rowNumber);
+        fixIncorrectBit();
+        goToLocation(startX, startY);
+        setDirection(startDirection);
+        
+        System.out.println("Fout gefixt op rij " + rowNumber + ", kolom " + columnNumber);
+    }
+    
+    public void goBackToStartOfRowAndFaceBack(int x, int y) {
+        goToLocation(0, y);
+        setDirection(EAST);
+    }
+    
+    public void turn180() {
+        for (int i = 0; i < 2; i++) {
+            turnRight();
+        }
+    }
+}
